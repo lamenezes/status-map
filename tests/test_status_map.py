@@ -183,3 +183,34 @@ def test_validate_transition_transition_not_found(status_map):
 
     with pytest.raises(TransitionNotFound):
         status_map.validate_transition("rejected", "processed")
+
+
+
+
+def test_simulate_random_mapping_error(): 
+    status_map = StatusMap({
+        "": ("created", "sent"),
+        "created": ("sent", "sent_error"),
+        "sent": ("published", "rejected"),
+        "sent_error": ("created",),
+        "rejected": ("sent",),
+        "published": ("rejected",),
+    })
+
+    assert status_map[""].previous == set()
+    assert status_map[""].next == {"created", "sent"}
+
+    assert status_map["created"].previous == {""}
+    assert status_map["created"].next == {"sent", "sent_error"}
+
+    assert status_map["sent"].previous == {"", "created"}
+    assert status_map["sent"].next == {"published", "rejected"}
+
+    assert status_map["sent_error"].previous == {"", "created"}
+    assert status_map["sent_error"].next == {"created"}
+
+    assert status_map["rejected"].previous == {"", "created", "sent"}
+    assert status_map["rejected"].next == {"sent"}
+
+    assert status_map["published"].previous == {"", "created", "sent"}
+    assert status_map["published"].next == {"rejected"}
