@@ -1,0 +1,22 @@
+[tool.poetry]
+name = "status-map"
+version = "0.1.0"
+description = "Status map (and its transitions) data structure"
+license = "MIT"
+authors = ["Luiz Menezes <luiz.menezesf@gmail.com>"]
+
+repository = "https://github.com/lamenezes/django-choices-enum"
+homepage = "https://github.com/lamenezes/django-choices-enum"
+
+keywords = ['enum', 'django', 'models', 'choices']
+
+[tool.poetry.dependencies]
+python = "^3.4"
+
+[tool.poetry.dev-dependencies]
+pytest = "^3.0"
+pytest-cov = "^2.7"
+
+[build-system]
+requires = ["poetry>=0.12"]
+build-backend = "poetry.masonry.api"
