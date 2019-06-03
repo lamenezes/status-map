@@ -21,3 +21,6 @@ clean-docs:
 
 test:
 	pytest tests
+
+pyformat:
+	black .

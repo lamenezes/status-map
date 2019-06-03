@@ -2,7 +2,7 @@ from collections.abc import Mapping
 
 from .exceptions import RepeatedTransition, StatusNotFound, TransitionNotFound
 
-__version__ = '0.1.0'
+__version__ = "0.1.0"
 
 
 class Status:
@@ -15,7 +15,7 @@ class Status:
             self._add_next(next)
 
     def __repr__(self):
-        return f'Status(name={self.name!r})'
+        return f"Status(name={self.name!r})"
 
     def __hash__(self):
         return hash(self.name)
@@ -30,7 +30,7 @@ class Status:
         return NotImplemented
 
     def _add_many(self, attr, status):
-        method = getattr(self, f'_add_{attr}')
+        method = getattr(self, f"_add_{attr}")
 
         for status in status:
             method(status)
@@ -40,13 +40,13 @@ class Status:
             other_status = Status(other_status)
 
         if isinstance(other_status, (list, set, tuple)):
-            return self._add_many('next', other_status)
+            return self._add_many("next", other_status)
 
         self.next.add(other_status)
 
     def _add_previous(self, previous):
         if isinstance(previous, (list, set, tuple)):
-            return self._add_many('previous', previous)
+            return self._add_many("previous", previous)
 
         self.previous.add(previous)
         self.previous.update(previous.previous)
@@ -93,10 +93,10 @@ class StatusMap(Mapping):
 
     def validate_transition(self, from_status, to_status):
         if from_status not in self._statuses:
-            raise StatusNotFound(f'from status {from_status} not found')
+            raise StatusNotFound(f"from status {from_status} not found")
 
         if to_status not in self._statuses:
-            raise StatusNotFound(f'to status {to_status} not found')
+            raise StatusNotFound(f"to status {to_status} not found")
 
         from_status = self._statuses[from_status]
         to_status = self._statuses[to_status]
@@ -105,7 +105,7 @@ class StatusMap(Mapping):
             return
 
         if to_status in from_status.previous:
-            msg = f'transition from {from_status} to {to_status} should have happened in the past'
+            msg = f"transition from {from_status} to {to_status} should have happened in the past"
             raise RepeatedTransition(msg)
 
-        raise TransitionNotFound(f'transition from {from_status} to {to_status} not found')
+        raise TransitionNotFound(f"transition from {from_status} to {to_status} not found")
