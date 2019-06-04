@@ -3,7 +3,7 @@ line-length = 110
 
 [tool.poetry]
 name = "status-map"
-version = "0.2.0"
+version = "0.3.0"
 description = "Status map (and its transitions) data structure"
 license = "MIT"
 authors = ["Luiz Menezes <luiz.menezesf@gmail.com>"]
