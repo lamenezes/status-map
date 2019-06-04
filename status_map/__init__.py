@@ -8,8 +8,8 @@ __version__ = "0.1.0"
 class Status:
     def __init__(self, name, next=None):
         self.name = name
-        self.previous = set()
-        self.next = set()
+        self.previous = []
+        self.next = []
 
         if next:
             self._add_next(next)
@@ -42,19 +42,19 @@ class Status:
         if isinstance(other_status, (list, set, tuple)):
             return self._add_many("next", other_status)
 
-        self.next.add(other_status)
+        self.next.append(other_status)
 
     def _add_previous(self, previous):
         if isinstance(previous, (list, set, tuple)):
             return self._add_many("previous", previous)
 
-        self.previous.add(previous)
-        self.previous.update(previous.previous)
+        self.previous.append(previous)
+        self.previous.extend(previous.previous)
 
 
 class StatusMap(Mapping):
     def __init__(self, transitions):
-        self._transitions = dict(transitions or self.transitions)
+        self._transitions = dict(transitions)
         assert self._transitions, "must pass a non-empty dict"
 
         self._statuses = {}
@@ -75,7 +75,7 @@ class StatusMap(Mapping):
     def __iter__(self):
         return iter(self._statuses)
 
-    def _add_status(self, status, previous=None):
+    def _add_status(self, status, previous=None, count=1):
         if status in self._statuses:
             return
 
@@ -89,7 +89,8 @@ class StatusMap(Mapping):
             current._add_next(self._transitions[current.name])
 
             if current.name not in self._statuses:
-                self._add_status(current, status)
+                count += 1
+                self._add_status(current, status, count)
 
     def validate_transition(self, from_status, to_status):
         if from_status not in self._statuses:
