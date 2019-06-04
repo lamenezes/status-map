@@ -1,10 +1,12 @@
 from collections.abc import Mapping
+from functools import total_ordering
 
 from .exceptions import RepeatedTransition, StatusNotFound, TransitionNotFound
 
 __version__ = "0.2.0"
 
 
+@total_ordering
 class Status:
     def __init__(self, name, next=None):
         self.name = name
@@ -17,15 +19,21 @@ class Status:
     def __repr__(self):
         return f"Status(name={self.name!r})"
 
-    def __hash__(self):
-        return hash(self.name)
-
     def __eq__(self, other):
         if isinstance(other, str):
             return other == self.name
 
         if isinstance(other, Status):
             return other.name == self.name
+
+        return NotImplemented
+
+    def __lt__(self, other):
+        if isinstance(other, str):
+            return self.name < other
+
+        if isinstance(other, Status):
+            return self.name < other.name
 
         return NotImplemented
 
@@ -76,9 +84,6 @@ class StatusMap(Mapping):
         return iter(self._statuses)
 
     def _add_status(self, status, previous=None):
-        if status in self._statuses:
-            return
-
         if self._parent is None:
             self._parent = status
 
