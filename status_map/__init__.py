@@ -75,7 +75,7 @@ class StatusMap(Mapping):
     def __iter__(self):
         return iter(self._statuses)
 
-    def _add_status(self, status, previous=None, count=1):
+    def _add_status(self, status, previous=None):
         if status in self._statuses:
             return
 
@@ -89,8 +89,7 @@ class StatusMap(Mapping):
             current._add_next(self._transitions[current.name])
 
             if current.name not in self._statuses:
-                count += 1
-                self._add_status(current, status, count)
+                self._add_status(current, status)
 
     def validate_transition(self, from_status, to_status):
         if from_status not in self._statuses:
