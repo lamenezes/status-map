@@ -105,8 +105,8 @@ That's it! You're ready from development.
 
 .. _poetry: https://github.com/sdispater/poetry
 
-.. |version-badge| image:: https://badge.fury.io/py/pysimplemodel.svg
-    :target: https://pypi.org/project/pysimplemodel/
+.. |version-badge| image:: https://badge.fury.io/py/status-map.svg
+    :target: https://pypi.org/project/status-map/
 
 .. |pyversion-badge| image:: https://img.shields.io/badge/python-3.6,3.7-blue.svg
     :target: https://github.com/lamenezes/status-map
