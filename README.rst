@@ -87,6 +87,12 @@ Roll up your virtual enviroment using your favorite tool and install development
 
     $ poetry install
 
+Install pre-commit hooks:
+
+.. code-block:: bash
+
+    $ pre-commit install
+
 
 Run tests by evoking pytest:
 

@@ -10,44 +10,39 @@ jobs:
   py36: &test-template
     working_directory: ~/repo
     docker:
-      - image: circleci/python:3.6.7
+      - image: circleci/python:3.6.8
 
     steps:
       - checkout
 
-      # - restore_cache:
-      # -   key: v1-dependencies-{{ checksum "simple_model/__version__.py" }}
+      - restore_cache:
+          keys: deps-{{ checksum "pyproject.toml" }}
 
       - run:
           name: Install test dependencies
           command: |
-            python3 -m venv venv
-            . venv/bin/activate
-            pip install poetry codecov
             poetry install
+            poetry add codecov
 
-      # - save_cache:
-      #     paths:
-      #       - ./venv
-      #     key: v1-dependencies-{{ checksum "simple_model/__version__.py" }}
+      - save_cache:
+          key: deps-{{ checksum "pyproject.toml" }}
+          paths:
+            - /home/circleci/.cache/pypoetry/virtualenvs
 
       - run:
           name: Linters
-          command: |
-            . venv/bin/activate
-            flake8 status_map tests --ignore=E501
+          command:
+            SKIP=no-commit-to-branch poetry run pre-commit run -a -v
 
       - run:
           name: Run tests
-          command: |
-            . venv/bin/activate
-            pytest
+          command:
+            poetry run pytest
 
       - run:
           name: codecov
-          command: |
-            . venv/bin/activate
-            codecov
+          command:
+            poetry run codecov
 
   py37:
     <<: *test-template

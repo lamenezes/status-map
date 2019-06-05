@@ -1,7 +1,8 @@
 from unittest import mock
+
 import pytest
 
-from status_map import __version__, Status, StatusMap
+from status_map import Status, StatusMap, __version__
 from status_map.exceptions import RepeatedTransition, StatusNotFound, TransitionNotFound
 
 
@@ -93,7 +94,9 @@ def test_status_add_previous_list():
 
 
 def test_status_map(status_map, transitions):
-    assert has_same_elements(status_map.statuses, ('pending', 'processing', 'approved', 'rejected', 'processed'))
+    assert has_same_elements(
+        status_map.statuses, ("pending", "processing", "approved", "rejected", "processed")
+    )
     assert str(status_map.statuses) in repr(status_map)
     assert status_map._transitions == transitions
     assert status_map._transitions is not transitions
