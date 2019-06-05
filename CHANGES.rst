@@ -7,6 +7,7 @@ Changes
 
 * Add custom representation for StatusMap
 * Improve StatusNotFound exception message
+* Add StatusMap.statuses property
 
 0.2.0 / 2019-06-04
 ==================

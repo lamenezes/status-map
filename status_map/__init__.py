@@ -73,8 +73,7 @@ class StatusMap(Mapping):
         self._add_status(parent)
 
     def __repr__(self):
-        statuses = tuple(key for key in self.keys())
-        return f"StatusMap(statuses={statuses})"
+        return f"StatusMap(statuses={self.statuses})"
 
     def __getitem__(self, key):
         if isinstance(key, Status):
@@ -86,6 +85,10 @@ class StatusMap(Mapping):
 
     def __iter__(self):
         return iter(self._statuses)
+
+    @property
+    def statuses(self):
+        return tuple(self.keys())
 
     def _add_status(self, status, previous=None):
         if self._parent is None:
