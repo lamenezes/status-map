@@ -2,6 +2,13 @@
 Changes
 =======
 
+0.4.0 / UNRELEASED
+==================
+
+* Add StatusMap._is_cycle() method
+* Add StatusMap.is_cycle property
+* Disable "previous" list of status when StatusMap is cycle, otherwise the previous status are added
+
 0.3.0 / UNRELEASED
 ==================
 
