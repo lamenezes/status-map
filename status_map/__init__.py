@@ -74,6 +74,9 @@ class StatusMap(Mapping):
         parent = Status(name, next_status)
         self._add_status(parent)
 
+    def __repr__(self):
+        return f"StatusMap(statuses={self.statuses})"
+
     def __getitem__(self, key):
         if isinstance(key, Status):
             key = key.name
@@ -84,6 +87,10 @@ class StatusMap(Mapping):
 
     def __iter__(self):
         return iter(self._statuses)
+
+    @property
+    def statuses(self):
+        return tuple(self.keys())
 
     def _add_status(self, status, previous=None):
         if self._parent is None:
@@ -101,10 +108,10 @@ class StatusMap(Mapping):
 
     def validate_transition(self, from_status, to_status):
         if from_status not in self._statuses:
-            raise StatusNotFound(f"from status {from_status} not found")
+            raise StatusNotFound(f"from_status {from_status} not found")
 
         if to_status not in self._statuses:
-            raise StatusNotFound(f"to status {to_status} not found")
+            raise StatusNotFound(f"to_status {to_status} not found")
 
         from_status = self._statuses[from_status]
         to_status = self._statuses[to_status]
@@ -113,10 +120,10 @@ class StatusMap(Mapping):
             return
 
         if to_status in from_status.previous:
-            msg = f"transition from {from_status} to {to_status} should have happened in the past"
+            msg = f"transition from {from_status.name} to {to_status.name} should have happened in the past"
             raise RepeatedTransition(msg)
 
-        raise TransitionNotFound(f"transition from {from_status} to {to_status} not found")
+        raise TransitionNotFound(f"transition from {from_status.name} to {to_status.name} not found")
 
     def _is_cycle(self):
         visited = set()

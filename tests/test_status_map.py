@@ -93,6 +93,8 @@ def test_status_add_previous_list():
 
 
 def test_status_map(status_map, transitions):
+    assert has_same_elements(status_map.statuses, ('pending', 'processing', 'approved', 'rejected', 'processed'))
+    assert str(status_map.statuses) in repr(status_map)
     assert status_map._transitions == transitions
     assert status_map._transitions is not transitions
     assert status_map._statuses
@@ -113,7 +115,9 @@ def test_status_map_magic_methods(status_map):
         status_map["pending"] < 10
 
     # inherited
-    assert has_same_elements(status_map.keys(), ["pending", "processing", "approved", "rejected", "processed"])
+    assert has_same_elements(
+        status_map.keys(), ["pending", "processing", "approved", "rejected", "processed"]
+    )
     assert "pending" in status_map
     assert "does-not-exists" not in status_map
     assert status_map.values()
@@ -126,12 +130,15 @@ def test_status_map_build_statuses(status_map):
     assert status_map.is_cycle is False
     assert has_same_elements(status_map["pending"].next, ["processing"])
     assert has_same_elements(status_map["pending"].previous, [])
+
     assert has_same_elements(status_map["processing"].next, ["approved", "rejected"])
     assert has_same_elements(status_map["processing"].previous, ["pending"])
+
     assert has_same_elements(status_map["approved"].next, ["processed"])
     assert has_same_elements(status_map["approved"].previous, ["processing", "pending"])
     assert has_same_elements(status_map["rejected"].next, [])
     assert has_same_elements(status_map["rejected"].previous, ["processing", "pending"])
+
     assert has_same_elements(status_map["processed"].next, [])
     assert has_same_elements(status_map["processed"].previous, ["processing", "pending", "approved"])
 
@@ -150,7 +157,7 @@ def test_validate_transition_invalid_from_status(status_map):
         status_map.validate_transition("does-not-exists", "processing")
 
     assert "does-not-exists" in str(exc)
-    assert "from status" in str(exc)
+    assert "from_status" in str(exc)
 
 
 def test_validate_transition_invalid_to_status(status_map):
@@ -158,7 +165,7 @@ def test_validate_transition_invalid_to_status(status_map):
         status_map.validate_transition("processing", "does-not-exists")
 
     assert "does-not-exists" in str(exc)
-    assert "to status" in str(exc)
+    assert "to_status" in str(exc)
 
 
 def test_validate_transition_repeated_transition(status_map):
