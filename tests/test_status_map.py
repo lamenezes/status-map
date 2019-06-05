@@ -133,7 +133,7 @@ def test_status_map_build_statuses(status_map):
     assert status_map.has_cycle is False
 
     assert has_same_elements(status_map["pending"].next, ["processing"])
-    assert has_same_elements(status_map["pending"].previous, [])
+    assert status_map["pending"].previous == []
 
     assert has_same_elements(status_map["processing"].next, ["approved", "rejected"])
     assert has_same_elements(status_map["processing"].previous, ["pending"])
@@ -141,10 +141,10 @@ def test_status_map_build_statuses(status_map):
     assert has_same_elements(status_map["approved"].next, ["processed"])
     assert has_same_elements(status_map["approved"].previous, ["processing", "pending"])
 
-    assert has_same_elements(status_map["rejected"].next, [])
+    assert status_map["rejected"].next == []
     assert has_same_elements(status_map["rejected"].previous, ["processing", "pending"])
 
-    assert has_same_elements(status_map["processed"].next, [])
+    assert status_map["processed"].next == []
     assert has_same_elements(status_map["processed"].previous, ["processing", "pending", "approved"])
 
 
@@ -261,14 +261,14 @@ def test_disable_previous_when_status_map_has_cycle():
             "published": ("rejected",),
         }
     )
-    assert status_map._has_cycle()
+    assert status_map._has_cycle() is True
 
-    assert has_same_elements(status_map[""].previous, [])
-    assert has_same_elements(status_map["created"].previous, [])
-    assert has_same_elements(status_map["sent"].previous, [])
-    assert has_same_elements(status_map["sent_error"].previous, [])
-    assert has_same_elements(status_map["rejected"].previous, [])
-    assert has_same_elements(status_map["published"].previous, [])
+    assert status_map[""].previous == []
+    assert status_map["created"].previous == []
+    assert status_map["sent"].previous == []
+    assert status_map["sent_error"].previous == []
+    assert status_map["rejected"].previous == []
+    assert status_map["published"].previous == []
 
     assert has_same_elements(status_map[""].next, ["created", "sent"])
     assert has_same_elements(status_map["created"].next, ["sent", "sent_error"])

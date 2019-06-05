@@ -106,6 +106,15 @@ class StatusMap(Mapping):
             if current.name not in self._statuses:
                 self._add_status(current, status)
 
+    def _has_cycle(self):
+        visited = set()
+        for status in self._transitions:
+            visited.add(status)
+            for inner_status, values in self._transitions.items():
+                if inner_status not in visited and status in values:
+                    return True
+        return False
+
     def validate_transition(self, from_status, to_status):
         if from_status not in self._statuses:
             raise StatusNotFound(f"from_status {from_status} not found")
@@ -124,12 +133,3 @@ class StatusMap(Mapping):
             raise RepeatedTransition(msg)
 
         raise TransitionNotFound(f"transition from {from_status.name} to {to_status.name} not found")
-
-    def _has_cycle(self):
-        visited = set()
-        for status in self._transitions:
-            visited.add(status)
-            for inner_status, values in self._transitions.items():
-                if inner_status not in visited and status in values:
-                    return True
-        return False
