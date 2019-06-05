@@ -3,7 +3,7 @@ from functools import total_ordering
 
 from .exceptions import RepeatedTransition, StatusNotFound, TransitionNotFound
 
-__version__ = "0.3.0"
+__version__ = "0.4.0"
 
 
 @total_ordering

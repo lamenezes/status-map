@@ -26,7 +26,7 @@ def status_map(transitions):
 
 
 def test_version():
-    assert __version__ == "0.3.0"
+    assert __version__ == "0.4.0"
 
 
 def test_status():
