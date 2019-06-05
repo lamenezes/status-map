@@ -19,6 +19,9 @@ clean-build:
 clean-docs:
 	@rm -fr docs/build/
 
+lint:
+	pre-commit run -a
+
 test:
 	pytest tests
 

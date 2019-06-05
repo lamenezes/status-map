@@ -1,9 +1,9 @@
+__version__ = "0.3.0"
+
 from collections.abc import Mapping
 from functools import total_ordering
 
 from .exceptions import RepeatedTransition, StatusNotFound, TransitionNotFound
-
-__version__ = "0.4.0"
 
 
 @total_ordering
@@ -65,7 +65,7 @@ class StatusMap(Mapping):
         self._transitions = dict(transitions)
         assert self._transitions, "must pass a non-empty dict"
 
-        self.is_cycle = self._is_cycle()
+        self.has_cycle = self._has_cycle()
 
         self._statuses = {}
         self._parent = None
@@ -100,7 +100,7 @@ class StatusMap(Mapping):
 
         for current in status.next:
             current._add_next(self._transitions[current.name])
-            if not self.is_cycle:
+            if not self.has_cycle:
                 current._add_previous(status)
 
             if current.name not in self._statuses:
@@ -125,13 +125,11 @@ class StatusMap(Mapping):
 
         raise TransitionNotFound(f"transition from {from_status.name} to {to_status.name} not found")
 
-    def _is_cycle(self):
+    def _has_cycle(self):
         visited = set()
         for status in self._transitions:
             visited.add(status)
             for inner_status, values in self._transitions.items():
-                if inner_status in visited:
-                    continue
-                if status in values:
+                if inner_status not in visited and status in values:
                     return True
         return False

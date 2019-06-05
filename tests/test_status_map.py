@@ -27,7 +27,7 @@ def status_map(transitions):
 
 
 def test_version():
-    assert __version__ == "0.4.0"
+    assert __version__ == "0.3.0"
 
 
 def test_status():
@@ -102,7 +102,7 @@ def test_status_map(status_map, transitions):
     assert status_map._transitions is not transitions
     assert status_map._statuses
     assert status_map._parent
-    assert status_map.is_cycle is False
+    assert status_map.has_cycle is False
 
 
 def test_status_map_magic_methods(status_map):
@@ -130,7 +130,8 @@ def test_status_map_magic_methods(status_map):
 
 
 def test_status_map_build_statuses(status_map):
-    assert status_map.is_cycle is False
+    assert status_map.has_cycle is False
+
     assert has_same_elements(status_map["pending"].next, ["processing"])
     assert has_same_elements(status_map["pending"].previous, [])
 
@@ -139,6 +140,7 @@ def test_status_map_build_statuses(status_map):
 
     assert has_same_elements(status_map["approved"].next, ["processed"])
     assert has_same_elements(status_map["approved"].previous, ["processing", "pending"])
+
     assert has_same_elements(status_map["rejected"].next, [])
     assert has_same_elements(status_map["rejected"].previous, ["processing", "pending"])
 
@@ -203,71 +205,63 @@ def test_validate_transition_transition_not_found(status_map):
 
 
 def test_status_map_is_not_cycle():
-    assert StatusMap({
-        "pending": ["processing"],
-        "processing": [],
-    })._is_cycle() is False
+    transitions = {"pending": ["processing"], "processing": []}
+    assert StatusMap(transitions)._has_cycle() is False
 
-    assert StatusMap({
-        "pending": ["processing"],
-        "processing": ["processed"],
-        "processed": []
-    })._is_cycle() is False
+    transitions = {"pending": ["processing"], "processing": ["processed"], "processed": []}
+    assert StatusMap(transitions)._has_cycle() is False
 
-    assert StatusMap({
+    transitions = {
         "pending": ["processing"],
         "processing": ["approved", "rejected"],
         "approved": ["processed"],
         "rejected": [],
         "processed": [],
-    })._is_cycle() is False
+    }
+    assert StatusMap(transitions)._has_cycle() is False
 
 
-def test_status_map_is_cycle():
-    assert StatusMap({
-        "pending": ["processing"],
-        "processing": ["pending"],
-    })._is_cycle() is True
+def test_status_map_has_cycle():
+    transitions = {"pending": ["processing"], "processing": ["pending"]}
+    assert StatusMap(transitions)._has_cycle() is True
 
-    assert StatusMap({
-        "pending": ["processing"],
-        "processing": ["processed"],
-        "processed": ["pending"]
-    })._is_cycle() is True
+    transitions = {"pending": ["processing"], "processing": ["processed"], "processed": ["pending"]}
+    assert StatusMap(transitions)._has_cycle() is True
 
-    assert StatusMap({
-        "pending": ["processing"],
-        "processing": ["processed"],
-        "processed": ["processing"]
-    })._is_cycle() is True
+    transitions = {"pending": ["processing"], "processing": ["processed"], "processed": ["processing"]}
+    assert StatusMap(transitions)._has_cycle() is True
 
-    assert StatusMap({
+    transitions = {
         "pending": ["processing"],
         "processing": ["approved", "rejected"],
         "approved": ["processed"],
         "rejected": ["pending"],
         "processed": [],
-    })._is_cycle() is True
+    }
+    assert StatusMap(transitions)._has_cycle() is True
 
-    assert StatusMap({
+    transitions = {
         "pending": ["processing"],
         "processing": ["approved", "rejected"],
         "approved": ["processed"],
         "rejected": ["approved"],
         "processed": [],
-    })._is_cycle() is True
+    }
+    assert StatusMap(transitions)._has_cycle() is True
 
 
-def test_disable_previous_when_status_map_is_cycle():
-    status_map = StatusMap({
-        "": ("created", "sent"),
-        "created": ("sent", "sent_error"),
-        "sent": ("published", "rejected"),
-        "sent_error": ("created",),
-        "rejected": ("sent",),
-        "published": ("rejected",),
-    })
-    assert status_map._is_cycle()
+def test_disable_previous_when_status_map_has_cycle():
+    status_map = StatusMap(
+        {
+            "": ("created", "sent"),
+            "created": ("sent", "sent_error"),
+            "sent": ("published", "rejected"),
+            "sent_error": ("created",),
+            "rejected": ("sent",),
+            "published": ("rejected",),
+        }
+    )
+    assert status_map._has_cycle()
 
     assert has_same_elements(status_map[""].previous, [])
     assert has_same_elements(status_map["created"].previous, [])
@@ -275,7 +269,7 @@ def test_disable_previous_when_status_map_is_cycle():
     assert has_same_elements(status_map["sent_error"].previous, [])
     assert has_same_elements(status_map["rejected"].previous, [])
     assert has_same_elements(status_map["published"].previous, [])
-    
+
     assert has_same_elements(status_map[""].next, ["created", "sent"])
     assert has_same_elements(status_map["created"].next, ["sent", "sent_error"])
     assert has_same_elements(status_map["sent"].next, ["published", "rejected"])
