@@ -1,5 +1,6 @@
 __version__ = "0.4.0"
-from .graph import Graph
+from collections.abc import Mapping
+from .graph import Graph, Vertex
 from .exceptions import RepeatedTransition, StatusNotFound, TransitionNotFound
 
 
@@ -17,47 +18,47 @@ class StatusMap(Mapping):
         return f"StatusMap(statuses={self.statuses})"
 
     def __getitem__(self, key):
-        if isinstance(key, Status):
+        if isinstance(key, Vertex):
             key = key.name
-        return self._statuses[key]
+        return self.graph.get_node(key)
 
     def __len__(self):
-        return len(self._statuses)
+        return self.graph.num_nodes
 
     def __iter__(self):
-        return iter(self._statuses)
+        return iter(graph)
 
     @property
     def statuses(self):
         return tuple(self.graph.get_nodes())
 
-    def validate_status_exists(self, from_status, to_status):
+    def _validate_status_exists(self, from_status, to_status):
         if from_status not in self.graph.get_nodes():
             raise StatusNotFound(f"from_status {from_status} not found")
 
         if to_status not in self.graph.get_nodes():
             raise StatusNotFound(f"to_status {to_status} not found")
 
-    def validate_is_previous(self, from_status, to_status):
+    def _validate_is_previous(self, from_status, to_status):
         self.graph.breath_first_search(from_status)
 
         from_status = self.graph.get_node(from_status)
         to_status = self.graph.get_node(to_status)
-
-        if from_status.distance in from_status.previous:
+        if to_status.distance == 0:
             msg = f"transition from {from_status.name} to {to_status.name} should have happened in the past"
             raise RepeatedTransition(msg)
 
-    def validate_is_future(self, from_status, to_status):
-        self.graph.breath_first_search(to_status)
+    def _validate_is_future(self, from_status, to_status):
+        self.graph.breath_first_search(from_status)
+
         from_status = self.graph.get_node(from_status)
         to_status = self.graph.get_node(to_status)
+        if to_status.distance > 1:
+            msg = f"transition from {from_status.name} to {to_status.name} not found"
+            raise TransitionNotFound(msg)
 
     def validate_transition(self, from_status, to_status):
-        self.validate_status_exists(from_status, to_status)
-        self.validate_is_previous(from_status, to_status)
-        self.validate_is_future(from_status, to_status)
-
-        
-
-        raise TransitionNotFound(f"transition from {from_status.name} to {to_status.name} not found")
+        if from_status != to_status:
+            self._validate_status_exists(from_status, to_status)
+            self._validate_is_future(from_status, to_status)
+            self._validate_is_previous(from_status, to_status)

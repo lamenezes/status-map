@@ -1,3 +1,4 @@
+import pytest
 from status_map.graph import Vertex
 
 

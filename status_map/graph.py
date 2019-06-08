@@ -1,4 +1,4 @@
-from .queue import Queue
+from collections import deque
 
 
 class Vertex:
@@ -7,7 +7,7 @@ class Vertex:
     EXPLORED = 'explored'
 
     def __init__(self, key):
-        self.id = key
+        self.name = key
         self.connected_to = {}
 
         self.distance = 0
@@ -24,7 +24,7 @@ class Vertex:
         return self.connected_to[neighbor]
 
     def __str__(self):
-        return f'{self.id} connected to: {[x.id for x in self.connected_to]}'
+        return f'{self.name} connected to: {[node.name for node in self.connected_to]}'
 
 
 class Graph:
@@ -63,17 +63,17 @@ class Graph:
 
     def breath_first_search(self, node):
         node = self.get_node(node)
-        vertex_queue = Queue()
-        vertex_queue.enqueue(node)
+        vertex_queue = deque()
+        vertex_queue.append(node)
 
-        while vertex_queue.size:
-            current_vertex = vertex_queue.dequeue()
+        while len(vertex_queue):
+            current_vertex = vertex_queue.pop()
             for neighbor in current_vertex.get_connections():
                 if neighbor.status == Vertex.UNEXPLORED:
                     neighbor.status = Vertex.EXPLORING
                     neighbor.distance = current_vertex.distance + 1
                     neighbor.predecessor = current_vertex
-                    vertex_queue.enqueue(neighbor)
+                    vertex_queue.append(neighbor)
 
             current_vertex.status = Vertex.EXPLORED
 

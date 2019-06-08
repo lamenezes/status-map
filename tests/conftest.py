@@ -1,9 +1,10 @@
 import pytest
+from status_map import StatusMap
 from status_map.graph import Graph
 
 
 @pytest.fixture
-def status_map():
+def next_status_map():
     return {
         'pending': {
             'shipped'
@@ -68,11 +69,16 @@ def status_map():
 
 
 @pytest.fixture
-def graph(status_map):
+def graph(next_status_map):
     graph = Graph()
-    graph.add_nodes(*status_map.keys())
+    graph.add_nodes(*next_status_map.keys())
 
     for node in graph.get_nodes():
-        to_nodes = status_map[node]
+        to_nodes = next_status_map[node]
         graph.add_edges_from_node(node, to_nodes)
     return graph
+
+
+@pytest.fixture
+def status_map_object(next_status_map):
+    return StatusMap(next_status_map)
