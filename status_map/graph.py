@@ -11,7 +11,6 @@ class Vertex:
         self.connected_to = {}
 
         self.distance = 0
-        self.predecessor = None
         self.status = self.UNEXPLORED
 
     def add_neighbor(self, neighbor, weight=0):
@@ -20,11 +19,15 @@ class Vertex:
     def get_connections(self):
         return self.connected_to.keys()
 
-    def get_weight(self, neighbor):
-        return self.connected_to[neighbor]
+    def _reset(self):
+        self.distance = 0
+        self.status = self.UNEXPLORED
 
     def __str__(self):
-        return f'{self.name} connected to: {[node.name for node in self.connected_to]}'
+        return f'{self.name}'
+
+    def __repr__(self):
+        return f'Vertex({self.name})'
 
 
 class Graph:
@@ -61,7 +64,7 @@ class Graph:
     def get_nodes(self):
         return self.nodes.keys()
 
-    def breath_first_search(self, node):
+    def _bfs(self, node):
         node = self.get_node(node)
         vertex_queue = deque()
         vertex_queue.append(node)
@@ -72,16 +75,35 @@ class Graph:
                 if neighbor.status == Vertex.UNEXPLORED:
                     neighbor.status = Vertex.EXPLORING
                     neighbor.distance = current_vertex.distance + 1
-                    neighbor.predecessor = current_vertex
                     vertex_queue.append(neighbor)
 
             current_vertex.status = Vertex.EXPLORED
 
-    def __iter__(self):
-        return iter(self.nodes.values())
+    def _reset_nodes(self):
+        for node in self.nodes.values():
+            node._reset()
 
-    def __contains__(self, key):
-        return key in self.nodes
+    def _get_distance(self, from_status, to_status):
+        distance = None
+        self._bfs(from_status)
+
+        for node in self.nodes.values():
+            if node.name == to_status:
+                distance = node.distance
+                break
+
+        self._reset_nodes()
+        return distance
+
+    def get_relative_distances(self, from_status, to_status):
+        distances = {}
+        distances[(from_status, to_status)] = self._get_distance(from_status, to_status)
+        distances[(to_status, from_status)] = self._get_distance(to_status, from_status)
+        return distances
 
     def __str__(self):
         return ', '.join([str(node) for node in self.nodes.values()])
+
+    def __repr__(self):
+        _repr = ', '.join([repr(node) for node in self.nodes.values()])
+        return f'Graph({_repr})'

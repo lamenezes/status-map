@@ -1,7 +1,7 @@
 __version__ = "0.4.0"
 from collections.abc import Mapping
 from .graph import Graph, Vertex
-from .exceptions import RepeatedTransition, StatusNotFound, TransitionNotFound
+from .exceptions import RepeatedTransition, FutureTransition, StatusNotFound, TransitionNotFound
 
 
 class StatusMap(Mapping):
@@ -39,26 +39,26 @@ class StatusMap(Mapping):
         if to_status not in self.graph.get_nodes():
             raise StatusNotFound(f"to_status {to_status} not found")
 
-    def _validate_is_previous(self, from_status, to_status):
-        self.graph.breath_first_search(from_status)
-
-        from_status = self.graph.get_node(from_status)
-        to_status = self.graph.get_node(to_status)
-        if to_status.distance == 0:
-            msg = f"transition from {from_status.name} to {to_status.name} should have happened in the past"
-            raise RepeatedTransition(msg)
-
-    def _validate_is_future(self, from_status, to_status):
-        self.graph.breath_first_search(from_status)
-
-        from_status = self.graph.get_node(from_status)
-        to_status = self.graph.get_node(to_status)
-        if to_status.distance > 1:
-            msg = f"transition from {from_status.name} to {to_status.name} not found"
+    def _validate_invalid_transition(self, from_status, to_status, distances):
+        if distances[(from_status, to_status)] == 0 and distances[(to_status, from_status)] == 0:
+            msg = f"transition from {from_status} to {to_status} not found"
             raise TransitionNotFound(msg)
 
+    def _validate_is_previous(self, from_status, to_status, distances):
+        if distances[(from_status, to_status)] == 0:
+            msg = f"transition from {from_status} to {to_status} should have happened in the past"
+            raise RepeatedTransition(msg)
+
+    def _validate_is_future(self, from_status, to_status, distances):
+        if distances[(from_status, to_status)] > 1:
+            msg = f"transition from {from_status} to {to_status} should happen in the future"
+            raise FutureTransition(msg)
+
     def validate_transition(self, from_status, to_status):
+        self._validate_status_exists(from_status, to_status)
+
+        distances = self.graph.get_relative_distances(from_status, to_status)
         if from_status != to_status:
-            self._validate_status_exists(from_status, to_status)
-            self._validate_is_future(from_status, to_status)
-            self._validate_is_previous(from_status, to_status)
+            self._validate_invalid_transition(from_status, to_status, distances)
+            self._validate_is_previous(from_status, to_status, distances)
+            self._validate_is_future(from_status, to_status, distances)
