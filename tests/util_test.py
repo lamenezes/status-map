@@ -1,67 +1,77 @@
 from status_map.graph import Graph
 
 
+# status_map = {
+#     'pending': {
+#         'shipped'
+#     },
+#     'shipped': {
+#         'stolen',
+#         'seized_for_inspection',
+#         'returned_to_sender',
+#         'shipped',
+#         'delivered',
+#         'awaiting_pickup_by_receiver',
+#         'returning_to_sender',
+#         'lost'
+#     },
+#     'lost': {
+#         'stolen',
+#         'returned_to_sender',
+#         'seized_for_inspection',
+#         'delivered',
+#         'awaiting_pickup_by_receiver',
+#         'returning_to_sender',
+#         'lost'
+#     },
+#     'stolen': {
+#         'seized_for_inspection',
+#         'returned_to_sender',
+#         'lost',
+#         'delivered',
+#         'returning_to_sender',
+#         'stolen',
+#         'awaiting_pickup_by_receiver'
+#     },
+#     'seized_for_inspection': {
+#         'stolen',
+#         'returned_to_sender',
+#         'seized_for_inspection',
+#         'delivered',
+#         'awaiting_pickup_by_receiver',
+#         'returning_to_sender',
+#         'lost'
+#     },
+#     'awaiting_pickup_by_receiver': {
+#         'stolen',
+#         'returned_to_sender',
+#         'seized_for_inspection',
+#         'delivered',
+#         'awaiting_pickup_by_receiver',
+#         'returning_to_sender',
+#         'lost'
+#     },
+#     'delivered': set(),
+#     'returning_to_sender': {
+#         'stolen',
+#         'returned_to_sender',
+#         'seized_for_inspection',
+#         'delivered',
+#         'returning_to_sender',
+#         'lost'
+#     },
+#     'returned_to_sender': set()
+# }
+
+
 status_map = {
-    'pending': {
-        'shipped'
-    },
-    'shipped': {
-        'stolen',
-        'seized_for_inspection',
-        'returned_to_sender',
-        'shipped',
-        'delivered',
-        'awaiting_pickup_by_receiver',
-        'returning_to_sender',
-        'lost'
-    },
-    'lost': {
-        'stolen',
-        'returned_to_sender',
-        'seized_for_inspection',
-        'delivered',
-        'awaiting_pickup_by_receiver',
-        'returning_to_sender',
-        'lost'
-    },
-    'stolen': {
-        'seized_for_inspection',
-        'returned_to_sender',
-        'lost',
-        'delivered',
-        'returning_to_sender',
-        'stolen',
-        'awaiting_pickup_by_receiver'
-    },
-    'seized_for_inspection': {
-        'stolen',
-        'returned_to_sender',
-        'seized_for_inspection',
-        'delivered',
-        'awaiting_pickup_by_receiver',
-        'returning_to_sender',
-        'lost'
-    },
-    'awaiting_pickup_by_receiver': {
-        'stolen',
-        'returned_to_sender',
-        'seized_for_inspection',
-        'delivered',
-        'awaiting_pickup_by_receiver',
-        'returning_to_sender',
-        'lost'
-    },
-    'delivered': set(),
-    'returning_to_sender': {
-        'stolen',
-        'returned_to_sender',
-        'seized_for_inspection',
-        'delivered',
-        'returning_to_sender',
-        'lost'
-    },
-    'returned_to_sender': set()
-}
+        "pending": ["processing"],
+        "processing": ["approved", "rejected"],
+        "approved": ["processed"],
+        "rejected": [],
+        "processed": [],
+    }
+
 
 graph = Graph()
 graph.add_nodes(*status_map.keys())
@@ -83,11 +93,17 @@ def get_distances(graph, from_status):
 
 
 print(get_distances(graph, 'pending'))
-print(get_distances(graph, 'shipped'))
-print(get_distances(graph, 'lost'))
-print(get_distances(graph, 'stolen'))
-print(get_distances(graph, 'seized_for_inspection'))
-print(get_distances(graph, 'awaiting_pickup_by_receiver'))
-print(get_distances(graph, 'delivered'))
-print(get_distances(graph, 'returning_to_sender'))
-print(get_distances(graph, 'returned_to_sender'))
+print(get_distances(graph, 'processing'))
+print(get_distances(graph, 'approved'))
+print(get_distances(graph, 'rejected'))
+print(get_distances(graph, 'processed'))
+
+# print(get_distances(graph, 'pending'))
+# print(get_distances(graph, 'shipped'))
+# print(get_distances(graph, 'lost'))
+# print(get_distances(graph, 'stolen'))
+# print(get_distances(graph, 'seized_for_inspection'))
+# print(get_distances(graph, 'awaiting_pickup_by_receiver'))
+# print(get_distances(graph, 'delivered'))
+# print(get_distances(graph, 'returning_to_sender'))
+# print(get_distances(graph, 'returned_to_sender'))

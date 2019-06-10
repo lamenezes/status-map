@@ -10,21 +10,132 @@ def test_version():
     assert __version__ == "0.4.0"
 
 
-def test_validate_transition_invalid_from_status(status_map_object):
+def test_simple_transition_invalid_from_status(transitions_map):
     with pytest.raises(StatusNotFound) as exc:
-        status_map_object.validate_transition("does-not-exists", "pending")
+        transitions_map.validate_transition("does-not-exists", "pending")
 
     assert "does-not-exists" in str(exc)
     assert "from_status" in str(exc)
 
 
-def test_validate_transition_invalid_to_status(status_map_object):
+def test_simple_transition_invalid_to_status(transitions_map):
     with pytest.raises(StatusNotFound) as exc:
-        status_map_object.validate_transition("pending", "does-not-exists")
+        transitions_map.validate_transition("pending", "does-not-exists")
 
     assert "does-not-exists" in str(exc)
     assert "to_status" in str(exc)
 
+
+@pytest.mark.parametrize('from_status,to_status', [
+    ('approved', 'rejected'),
+    ('processed', 'rejected'),
+])
+def test_simple_validate_transition_not_found(from_status, to_status, transitions_map):
+    with pytest.raises(TransitionNotFound):
+        transitions_map.validate_transition(from_status, to_status)
+
+
+@pytest.mark.parametrize('from_status,to_status', [
+    ('approved', 'pending'),
+    ('approved', 'processing'),
+    ('processed', 'pending'),
+    ('processed', 'processing'),
+    ('processed', 'approved'),
+])
+def test_simple_validate_transition_repeated_transition(from_status, to_status, transitions_map):
+    with pytest.raises(RepeatedTransition):
+        transitions_map.validate_transition(from_status, to_status)
+
+
+@pytest.mark.parametrize('from_status,to_status', [
+    ('approved', 'pending'),
+    ('approved', 'processing'),
+    ('processed', 'pending'),
+    ('processed', 'processing'),
+    ('processed', 'approved'),
+    # FIXME TransitionNotFound treated as RepeatedTransition when transitions are cyclic
+    ('approved', 'rejected'),
+    ('processed', 'rejected'),
+])
+def test_simple_validate_transition_repeated_transition_cyclic(from_status, to_status, cycle_transitions_map):
+    with pytest.raises(RepeatedTransition):
+        cycle_transitions_map.validate_transition(from_status, to_status)
+
+
+@pytest.mark.parametrize('from_status,to_status', [
+    ('pending', 'processed'),
+    ('pending', 'approved'),
+    ('pending', 'processed'),
+    ('processing', 'processed'),
+])
+def test_simple_validate_future_transition(from_status, to_status, transitions_map):
+    with pytest.raises(FutureTransition):
+        transitions_map.validate_transition(from_status, to_status)
+
+
+@pytest.mark.parametrize('from_status,to_status', [
+    ('pending', 'processed'),
+    ('pending', 'approved'),
+    ('pending', 'processed'),
+    ('processing', 'processed'),
+    # TransitionNotFound treated as FutureTransition when transitions are cyclic
+    ('rejected', 'approved'),
+    ('rejected', 'processed'),
+    # RepeatedTransition treated as FutureTransition when transitions are cyclic
+    ('rejected', 'processing'),
+    ('processing', 'pending'),
+    
+])
+def test_simple_validate_future_cyclic_transition(from_status, to_status, cycle_transitions_map):
+    with pytest.raises(FutureTransition):
+        cycle_transitions_map.validate_transition(from_status, to_status)
+
+
+@pytest.mark.parametrize('from_status,to_status', [
+    ('pending', 'pending'),
+    ('processing', 'processing'),
+    ('approved', 'approved'),
+    ('rejected', 'rejected'),
+    ('processed', 'processed'),
+])
+def test_simple_validate_same_transition(from_status, to_status, transitions_map):
+    assert transitions_map.validate_transition(from_status, to_status) is None
+
+
+@pytest.mark.parametrize('from_status,to_status', [
+    ('pending', 'pending'),
+    ('processing', 'processing'),
+    ('approved', 'approved'),
+    ('rejected', 'rejected'),
+    ('processed', 'processed'),
+])
+def test_simple_validate_same_cyclic_transition(from_status, to_status, cycle_transitions_map):
+    assert cycle_transitions_map.validate_transition(from_status, to_status) is None
+
+
+@pytest.mark.parametrize('from_status,to_status', [
+    ('pending', 'processing'),
+    ('processing', 'approved'),
+    ('processing', 'rejected'),
+    ('approved', 'processed'),
+])
+def test_simple_validate_next_transition(from_status, to_status, transitions_map):
+    assert transitions_map.validate_transition(from_status, to_status) is None
+
+
+@pytest.mark.parametrize('from_status,to_status', [
+    ('pending', 'processing'),
+    ('processing', 'approved'),
+    ('processing', 'rejected'),
+    ('approved', 'processed'),
+    # is next status because transitions are cyclic
+    ('rejected', 'pending'),
+])
+def test_simple_validate_next_cyclic_transition(from_status, to_status, cycle_transitions_map):
+    assert cycle_transitions_map.validate_transition(from_status, to_status) is None
+
+
+# real scenario
 
 @pytest.mark.parametrize('from_status,to_status', [
     ('pending', 'pending'),
@@ -37,8 +148,8 @@ def test_validate_transition_invalid_to_status(status_map_object):
     ('returning_to_sender', 'returning_to_sender'),
     ('returned_to_sender', 'returned_to_sender'),
 ])
-def test_validate_transition_same_status(from_status, to_status, status_map_object):
-    assert status_map_object.validate_transition(from_status, to_status) is None
+def test_validate_transition_same_status(from_status, to_status, complex_transitions_map):
+    assert complex_transitions_map.validate_transition(from_status, to_status) is None
 
 
 @pytest.mark.parametrize('from_status,to_status', [
@@ -80,17 +191,17 @@ def test_validate_transition_same_status(from_status, to_status, status_map_obje
     ('returning_to_sender', 'delivered'),
     ('returning_to_sender', 'returned_to_sender'),
 ])
-def test_validate_transition_next_status(from_status, to_status, status_map_object):
-    assert status_map_object.validate_transition(from_status, to_status) is None
+def test_validate_transition_next_status(from_status, to_status, complex_transitions_map):
+    assert complex_transitions_map.validate_transition(from_status, to_status) is None
 
 
 @pytest.mark.parametrize('from_status,to_status', [
     ('delivered', 'returned_to_sender'),
     ('returned_to_sender', 'delivered'),
 ])
-def test_validate_transitions_transition_not_found(from_status, to_status, status_map_object):
+def test_validate_transitions_transition_not_found(from_status, to_status, complex_transitions_map):
     with pytest.raises(TransitionNotFound):
-        status_map_object.validate_transition(from_status, to_status)
+        complex_transitions_map.validate_transition(from_status, to_status)
 
 
 @pytest.mark.parametrize('from_status,to_status', [
@@ -120,9 +231,9 @@ def test_validate_transitions_transition_not_found(from_status, to_status, statu
     ('returned_to_sender', 'awaiting_pickup_by_receiver'),
     ('returned_to_sender', 'returning_to_sender'),
 ])
-def test_validate_transitions_repeated_transition(from_status, to_status, status_map_object):
+def test_validate_transitions_repeated_transition(from_status, to_status, complex_transitions_map):
     with pytest.raises(RepeatedTransition):
-        status_map_object.validate_transition(from_status, to_status)
+        complex_transitions_map.validate_transition(from_status, to_status)
 
 
 @pytest.mark.parametrize('from_status,to_status', [
@@ -135,6 +246,6 @@ def test_validate_transitions_repeated_transition(from_status, to_status, status
     ('pending', 'returned_to_sender'),
     ('returning_to_sender', 'awaiting_pickup_by_receiver'),
 ])
-def test_validate_transitions_future_transition(from_status, to_status, status_map_object):
+def test_validate_transitions_future_transition(from_status, to_status, complex_transitions_map):
     with pytest.raises(FutureTransition):
-        status_map_object.validate_transition(from_status, to_status)
+        complex_transitions_map.validate_transition(from_status, to_status)

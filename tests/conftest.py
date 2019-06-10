@@ -4,7 +4,29 @@ from status_map.graph import Graph
 
 
 @pytest.fixture
-def next_status_map():
+def transitions():
+    return {
+        "pending": ["processing"],
+        "processing": ["approved", "rejected"],
+        "approved": ["processed"],
+        "rejected": [],
+        "processed": [],
+    }
+
+
+@pytest.fixture
+def cycle_transitions():
+    return {
+        "pending": {"processing"},
+        "processing": {"approved", "rejected"},
+        "approved": {"processed"},
+        "rejected": {"pending"},
+        "processed": set(),
+    }
+
+
+@pytest.fixture
+def complex_transitions():
     return {
         'pending': {
             'shipped'
@@ -69,16 +91,26 @@ def next_status_map():
 
 
 @pytest.fixture
-def graph(next_status_map):
-    graph = Graph()
-    graph.add_nodes(*next_status_map.keys())
-
-    for node in graph.get_nodes():
-        to_nodes = next_status_map[node]
-        graph.add_edges_from_node(node, to_nodes)
-    return graph
+def complex_transitions_map(complex_transitions):
+    return StatusMap(complex_transitions)
 
 
 @pytest.fixture
-def status_map_object(next_status_map):
-    return StatusMap(next_status_map)
+def transitions_map(transitions):
+    return StatusMap(transitions)
+
+
+@pytest.fixture
+def cycle_transitions_map(cycle_transitions):
+    return StatusMap(cycle_transitions)
+
+
+@pytest.fixture
+def graph(cycle_transitions):
+    graph = Graph()
+    graph.add_nodes(*cycle_transitions.keys())
+
+    for node in graph.get_nodes():
+        to_nodes = cycle_transitions[node]
+        graph.add_edges_from_node(node, to_nodes)
+    return graph
