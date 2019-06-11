@@ -2,9 +2,9 @@ from collections import deque
 
 
 class Vertex:
-    UNEXPLORED = 'unexplored'
-    EXPLORING = 'exploring'
-    EXPLORED = 'explored'
+    UNEXPLORED = "unexplored"
+    EXPLORING = "exploring"
+    EXPLORED = "explored"
 
     def __init__(self, key):
         self.name = key
@@ -24,14 +24,13 @@ class Vertex:
         self.status = self.UNEXPLORED
 
     def __str__(self):
-        return f'{self.name}'
+        return f"{self.name}"
 
     def __repr__(self):
-        return f'Vertex({self.name})'
+        return f"Vertex({self.name})"
 
 
 class Graph:
-
     def __init__(self):
         self.nodes = {}
         self.num_nodes = 0
@@ -102,8 +101,8 @@ class Graph:
         return distances
 
     def __str__(self):
-        return ', '.join([str(node) for node in self.nodes.values()])
+        return ", ".join([str(node) for node in self.nodes.values()])
 
     def __repr__(self):
-        _repr = ', '.join([repr(node) for node in self.nodes.values()])
-        return f'Graph({_repr})'
+        _repr = ", ".join([repr(node) for node in self.nodes.values()])
+        return f"Graph({_repr})"

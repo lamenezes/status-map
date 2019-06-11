@@ -1,5 +1,3 @@
-from unittest import mock
-
 import pytest
 
 from status_map import __version__
@@ -26,226 +24,258 @@ def test_simple_transition_invalid_to_status(transitions_map):
     assert "to_status" in str(exc)
 
 
-@pytest.mark.parametrize('from_status,to_status', [
-    ('approved', 'rejected'),
-    ('processed', 'rejected'),
-])
+@pytest.mark.parametrize("from_status,to_status", [("approved", "rejected"), ("processed", "rejected")])
 def test_simple_validate_transition_not_found(from_status, to_status, transitions_map):
     with pytest.raises(TransitionNotFound):
         transitions_map.validate_transition(from_status, to_status)
 
 
-@pytest.mark.parametrize('from_status,to_status', [
-    ('approved', 'pending'),
-    ('approved', 'processing'),
-    ('processed', 'pending'),
-    ('processed', 'processing'),
-    ('processed', 'approved'),
-])
+@pytest.mark.parametrize(
+    "from_status,to_status",
+    [
+        ("approved", "pending"),
+        ("approved", "processing"),
+        ("processed", "pending"),
+        ("processed", "processing"),
+        ("processed", "approved"),
+    ],
+)
 def test_simple_validate_transition_repeated_transition(from_status, to_status, transitions_map):
     with pytest.raises(RepeatedTransition):
         transitions_map.validate_transition(from_status, to_status)
 
 
-@pytest.mark.parametrize('from_status,to_status', [
-    ('approved', 'pending'),
-    ('approved', 'processing'),
-    ('processed', 'pending'),
-    ('processed', 'processing'),
-    ('processed', 'approved'),
-    # FIXME TransitionNotFound treated as RepeatedTransition when transitions are cyclic
-    ('approved', 'rejected'),
-    ('processed', 'rejected'),
-])
+@pytest.mark.parametrize(
+    "from_status,to_status",
+    [
+        ("approved", "pending"),
+        ("approved", "processing"),
+        ("processed", "pending"),
+        ("processed", "processing"),
+        ("processed", "approved"),
+        # TransitionNotFound treated as RepeatedTransition when transitions are cyclic
+        ("approved", "rejected"),  # rejected < pending < processing < approved
+        ("processed", "rejected"),  # rejected < pending < processing < approved < rejected
+    ],
+)
 def test_simple_validate_transition_repeated_transition_cyclic(from_status, to_status, cycle_transitions_map):
     with pytest.raises(RepeatedTransition):
         cycle_transitions_map.validate_transition(from_status, to_status)
 
 
-@pytest.mark.parametrize('from_status,to_status', [
-    ('pending', 'processed'),
-    ('pending', 'approved'),
-    ('pending', 'processed'),
-    ('processing', 'processed'),
-])
+@pytest.mark.parametrize(
+    "from_status,to_status",
+    [
+        ("pending", "processed"),
+        ("pending", "approved"),
+        ("pending", "processed"),
+        ("processing", "processed"),
+    ],
+)
 def test_simple_validate_future_transition(from_status, to_status, transitions_map):
     with pytest.raises(FutureTransition):
         transitions_map.validate_transition(from_status, to_status)
 
 
-@pytest.mark.parametrize('from_status,to_status', [
-    ('pending', 'processed'),
-    ('pending', 'approved'),
-    ('pending', 'processed'),
-    ('processing', 'processed'),
-    # TransitionNotFound treated as FutureTransition when transitions are cyclic
-    ('rejected', 'approved'),
-    ('rejected', 'processed'),
-    # RepeatedTransition treated as FutureTransition when transitions are cyclic
-    ('rejected', 'processing'),
-    ('processing', 'pending'),
-    
-])
+@pytest.mark.parametrize(
+    "from_status,to_status",
+    [
+        ("pending", "processed"),
+        ("pending", "approved"),
+        ("pending", "processed"),
+        ("processing", "processed"),
+        # TransitionNotFound treated as FutureTransition when transitions are cyclic
+        ("rejected", "approved"),  # rejected > pending > processing > approved
+        ("rejected", "processed"),  # rejected > pending > processing > approved > processed
+        # RepeatedTransition treated as FutureTransition when transitions are cyclic
+        ("rejected", "processing"),  # rejected > pending > processing
+        ("processing", "pending"),  # processing > rejected > pending
+    ],
+)
 def test_simple_validate_future_cyclic_transition(from_status, to_status, cycle_transitions_map):
     with pytest.raises(FutureTransition):
         cycle_transitions_map.validate_transition(from_status, to_status)
 
 
-@pytest.mark.parametrize('from_status,to_status', [
-    ('pending', 'pending'),
-    ('processing', 'processing'),
-    ('approved', 'approved'),
-    ('rejected', 'rejected'),
-    ('processed', 'processed'),
-])
+@pytest.mark.parametrize(
+    "from_status,to_status",
+    [
+        ("pending", "pending"),
+        ("processing", "processing"),
+        ("approved", "approved"),
+        ("rejected", "rejected"),
+        ("processed", "processed"),
+    ],
+)
 def test_simple_validate_same_transition(from_status, to_status, transitions_map):
     assert transitions_map.validate_transition(from_status, to_status) is None
 
 
-@pytest.mark.parametrize('from_status,to_status', [
-    ('pending', 'pending'),
-    ('processing', 'processing'),
-    ('approved', 'approved'),
-    ('rejected', 'rejected'),
-    ('processed', 'processed'),
-])
+@pytest.mark.parametrize(
+    "from_status,to_status",
+    [
+        ("pending", "pending"),
+        ("processing", "processing"),
+        ("approved", "approved"),
+        ("rejected", "rejected"),
+        ("processed", "processed"),
+    ],
+)
 def test_simple_validate_same_cyclic_transition(from_status, to_status, cycle_transitions_map):
     assert cycle_transitions_map.validate_transition(from_status, to_status) is None
 
 
-@pytest.mark.parametrize('from_status,to_status', [
-    ('pending', 'processing'),
-    ('processing', 'approved'),
-    ('processing', 'rejected'),
-    ('approved', 'processed'),
-])
+@pytest.mark.parametrize(
+    "from_status,to_status",
+    [
+        ("pending", "processing"),
+        ("processing", "approved"),
+        ("processing", "rejected"),
+        ("approved", "processed"),
+    ],
+)
 def test_simple_validate_next_transition(from_status, to_status, transitions_map):
     assert transitions_map.validate_transition(from_status, to_status) is None
 
 
-@pytest.mark.parametrize('from_status,to_status', [
-    ('pending', 'processing'),
-    ('processing', 'approved'),
-    ('processing', 'rejected'),
-    ('approved', 'processed'),
-    # is next status because transitions are cyclic
-    ('rejected', 'pending'),
-])
+@pytest.mark.parametrize(
+    "from_status,to_status",
+    [
+        ("pending", "processing"),
+        ("processing", "approved"),
+        ("processing", "rejected"),
+        ("approved", "processed"),
+        # is next status because transitions are cyclic
+        ("rejected", "pending"),
+    ],
+)
 def test_simple_validate_next_cyclic_transition(from_status, to_status, cycle_transitions_map):
     assert cycle_transitions_map.validate_transition(from_status, to_status) is None
 
 
 # real scenario
 
-@pytest.mark.parametrize('from_status,to_status', [
-    ('pending', 'pending'),
-    ('shipped', 'shipped'),
-    ('lost', 'lost'),
-    ('stolen', 'stolen'),
-    ('seized_for_inspection', 'seized_for_inspection'),
-    ('awaiting_pickup_by_receiver', 'awaiting_pickup_by_receiver'),
-    ('delivered', 'delivered'),
-    ('returning_to_sender', 'returning_to_sender'),
-    ('returned_to_sender', 'returned_to_sender'),
-])
+
+@pytest.mark.parametrize(
+    "from_status,to_status",
+    [
+        ("pending", "pending"),
+        ("shipped", "shipped"),
+        ("lost", "lost"),
+        ("stolen", "stolen"),
+        ("seized_for_inspection", "seized_for_inspection"),
+        ("awaiting_pickup_by_receiver", "awaiting_pickup_by_receiver"),
+        ("delivered", "delivered"),
+        ("returning_to_sender", "returning_to_sender"),
+        ("returned_to_sender", "returned_to_sender"),
+    ],
+)
 def test_validate_transition_same_status(from_status, to_status, complex_transitions_map):
     assert complex_transitions_map.validate_transition(from_status, to_status) is None
 
 
-@pytest.mark.parametrize('from_status,to_status', [
-    ('pending', 'shipped'),
-    ('shipped', 'lost'),
-    ('shipped', 'stolen'),
-    ('shipped', 'seized_for_inspection'),
-    ('shipped', 'awaiting_pickup_by_receiver'),
-    ('shipped', 'delivered'),
-    ('shipped', 'returning_to_sender'),
-    ('shipped', 'returned_to_sender'),
-    ('lost', 'stolen'),
-    ('lost', 'seized_for_inspection'),
-    ('lost', 'awaiting_pickup_by_receiver'),
-    ('lost', 'delivered'),
-    ('lost', 'returning_to_sender'),
-    ('lost', 'returned_to_sender'),
-    ('stolen', 'lost'),
-    ('stolen', 'seized_for_inspection'),
-    ('stolen', 'awaiting_pickup_by_receiver'),
-    ('stolen', 'delivered'),
-    ('stolen', 'returning_to_sender'),
-    ('stolen', 'returned_to_sender'),
-    ('seized_for_inspection', 'lost'),
-    ('seized_for_inspection', 'stolen'),
-    ('seized_for_inspection', 'awaiting_pickup_by_receiver'),
-    ('seized_for_inspection', 'delivered'),
-    ('seized_for_inspection', 'returning_to_sender'),
-    ('seized_for_inspection', 'returned_to_sender'),
-    ('awaiting_pickup_by_receiver', 'lost'),
-    ('awaiting_pickup_by_receiver', 'stolen'),
-    ('awaiting_pickup_by_receiver', 'seized_for_inspection'),
-    ('awaiting_pickup_by_receiver', 'delivered'),
-    ('awaiting_pickup_by_receiver', 'returning_to_sender'),
-    ('awaiting_pickup_by_receiver', 'returned_to_sender'),
-    ('returning_to_sender', 'lost'),
-    ('returning_to_sender', 'stolen'),
-    ('returning_to_sender', 'seized_for_inspection'),
-    ('returning_to_sender', 'delivered'),
-    ('returning_to_sender', 'returned_to_sender'),
-])
+@pytest.mark.parametrize(
+    "from_status,to_status",
+    [
+        ("pending", "shipped"),
+        ("shipped", "lost"),
+        ("shipped", "stolen"),
+        ("shipped", "seized_for_inspection"),
+        ("shipped", "awaiting_pickup_by_receiver"),
+        ("shipped", "delivered"),
+        ("shipped", "returning_to_sender"),
+        ("shipped", "returned_to_sender"),
+        ("lost", "stolen"),
+        ("lost", "seized_for_inspection"),
+        ("lost", "awaiting_pickup_by_receiver"),
+        ("lost", "delivered"),
+        ("lost", "returning_to_sender"),
+        ("lost", "returned_to_sender"),
+        ("stolen", "lost"),
+        ("stolen", "seized_for_inspection"),
+        ("stolen", "awaiting_pickup_by_receiver"),
+        ("stolen", "delivered"),
+        ("stolen", "returning_to_sender"),
+        ("stolen", "returned_to_sender"),
+        ("seized_for_inspection", "lost"),
+        ("seized_for_inspection", "stolen"),
+        ("seized_for_inspection", "awaiting_pickup_by_receiver"),
+        ("seized_for_inspection", "delivered"),
+        ("seized_for_inspection", "returning_to_sender"),
+        ("seized_for_inspection", "returned_to_sender"),
+        ("awaiting_pickup_by_receiver", "lost"),
+        ("awaiting_pickup_by_receiver", "stolen"),
+        ("awaiting_pickup_by_receiver", "seized_for_inspection"),
+        ("awaiting_pickup_by_receiver", "delivered"),
+        ("awaiting_pickup_by_receiver", "returning_to_sender"),
+        ("awaiting_pickup_by_receiver", "returned_to_sender"),
+        ("returning_to_sender", "lost"),
+        ("returning_to_sender", "stolen"),
+        ("returning_to_sender", "seized_for_inspection"),
+        ("returning_to_sender", "delivered"),
+        ("returning_to_sender", "returned_to_sender"),
+    ],
+)
 def test_validate_transition_next_status(from_status, to_status, complex_transitions_map):
     assert complex_transitions_map.validate_transition(from_status, to_status) is None
 
 
-@pytest.mark.parametrize('from_status,to_status', [
-    ('delivered', 'returned_to_sender'),
-    ('returned_to_sender', 'delivered'),
-])
+@pytest.mark.parametrize(
+    "from_status,to_status", [("delivered", "returned_to_sender"), ("returned_to_sender", "delivered")]
+)
 def test_validate_transitions_transition_not_found(from_status, to_status, complex_transitions_map):
     with pytest.raises(TransitionNotFound):
         complex_transitions_map.validate_transition(from_status, to_status)
 
 
-@pytest.mark.parametrize('from_status,to_status', [
-    ('shipped', 'pending'),
-    ('lost', 'pending'),
-    ('lost', 'shipped'),
-    ('stolen', 'pending'),
-    ('stolen', 'shipped'),
-    ('seized_for_inspection', 'pending'),
-    ('seized_for_inspection', 'shipped'),
-    ('awaiting_pickup_by_receiver', 'pending'),
-    ('awaiting_pickup_by_receiver', 'shipped'),
-    ('delivered', 'pending'),
-    ('delivered', 'shipped'),
-    ('delivered', 'lost'),
-    ('delivered', 'stolen'),
-    ('delivered', 'seized_for_inspection'),
-    ('delivered', 'awaiting_pickup_by_receiver'),
-    ('delivered', 'returning_to_sender'),
-    ('returning_to_sender', 'pending'),
-    ('returning_to_sender', 'shipped'),
-    ('returned_to_sender', 'pending'),
-    ('returned_to_sender', 'shipped'),
-    ('returned_to_sender', 'lost'),
-    ('returned_to_sender', 'stolen'),
-    ('returned_to_sender', 'seized_for_inspection'),
-    ('returned_to_sender', 'awaiting_pickup_by_receiver'),
-    ('returned_to_sender', 'returning_to_sender'),
-])
+@pytest.mark.parametrize(
+    "from_status,to_status",
+    [
+        ("shipped", "pending"),
+        ("lost", "pending"),
+        ("lost", "shipped"),
+        ("stolen", "pending"),
+        ("stolen", "shipped"),
+        ("seized_for_inspection", "pending"),
+        ("seized_for_inspection", "shipped"),
+        ("awaiting_pickup_by_receiver", "pending"),
+        ("awaiting_pickup_by_receiver", "shipped"),
+        ("delivered", "pending"),
+        ("delivered", "shipped"),
+        ("delivered", "lost"),
+        ("delivered", "stolen"),
+        ("delivered", "seized_for_inspection"),
+        ("delivered", "awaiting_pickup_by_receiver"),
+        ("delivered", "returning_to_sender"),
+        ("returning_to_sender", "pending"),
+        ("returning_to_sender", "shipped"),
+        ("returned_to_sender", "pending"),
+        ("returned_to_sender", "shipped"),
+        ("returned_to_sender", "lost"),
+        ("returned_to_sender", "stolen"),
+        ("returned_to_sender", "seized_for_inspection"),
+        ("returned_to_sender", "awaiting_pickup_by_receiver"),
+        ("returned_to_sender", "returning_to_sender"),
+    ],
+)
 def test_validate_transitions_repeated_transition(from_status, to_status, complex_transitions_map):
     with pytest.raises(RepeatedTransition):
         complex_transitions_map.validate_transition(from_status, to_status)
 
 
-@pytest.mark.parametrize('from_status,to_status', [
-    ('pending', 'lost'),
-    ('pending', 'stolen'),
-    ('pending', 'seized_for_inspection'),
-    ('pending', 'awaiting_pickup_by_receiver'),
-    ('pending', 'delivered'),
-    ('pending', 'returning_to_sender'),
-    ('pending', 'returned_to_sender'),
-    ('returning_to_sender', 'awaiting_pickup_by_receiver'),
-])
+@pytest.mark.parametrize(
+    "from_status,to_status",
+    [
+        ("pending", "lost"),
+        ("pending", "stolen"),
+        ("pending", "seized_for_inspection"),
+        ("pending", "awaiting_pickup_by_receiver"),
+        ("pending", "delivered"),
+        ("pending", "returning_to_sender"),
+        ("pending", "returned_to_sender"),
+        ("returning_to_sender", "awaiting_pickup_by_receiver"),
+    ],
+)
 def test_validate_transitions_future_transition(from_status, to_status, complex_transitions_map):
     with pytest.raises(FutureTransition):
         complex_transitions_map.validate_transition(from_status, to_status)
