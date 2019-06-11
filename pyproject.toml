@@ -23,6 +23,7 @@ keywords = ['enum', 'django', 'models', 'choices']
 
 [tool.poetry.dependencies]
 python = "^3.6"
+networkx = "^2.3"
 
 [tool.poetry.dev-dependencies]
 black = { version = "*", allows-prereleases = true }
