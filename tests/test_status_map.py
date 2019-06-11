@@ -2,10 +2,28 @@ import pytest
 
 from status_map import StatusMap, __version__
 from status_map.exceptions import FutureTransition, RepeatedTransition, StatusNotFound, TransitionNotFound
+from status_map.graph import Vertex
 
 
 def test_version():
     assert __version__ == "0.4.0"
+
+
+def test_status_map_magic_methods(transitions_map):
+    assert str(transitions_map) == "('pending', 'processing', 'approved', 'rejected', 'processed')"
+    assert (
+        repr(transitions_map)
+        == "StatusMap(statuses=('pending', 'processing', 'approved', 'rejected', 'processed'))"
+    )
+    assert len(transitions_map) == 5
+    assert transitions_map["pending"] in transitions_map
+    assert isinstance(transitions_map["pending"], Vertex)
+    with pytest.raises(KeyError):
+        transitions_map["does_not_exist"]
+
+
+def test_status_map_properties(transitions_map):
+    assert transitions_map.statuses == ("pending", "processing", "approved", "rejected", "processed")
 
 
 def test_simple_transition_invalid_from_status(transitions_map):

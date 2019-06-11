@@ -18,6 +18,9 @@ class StatusMap(Mapping):
     def __repr__(self):
         return f"StatusMap(statuses={self.statuses})"
 
+    def __str__(self):
+        return f"{self.statuses}"
+
     def __getitem__(self, key):
         if isinstance(key, Vertex):
             key = key.name
