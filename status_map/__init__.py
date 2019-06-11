@@ -30,7 +30,7 @@ class StatusMap(Mapping):
         return self.graph.num_nodes
 
     def __iter__(self):
-        return iter(self.graph)
+        return iter(self.graph.nodes.values())
 
     @property
     def statuses(self):

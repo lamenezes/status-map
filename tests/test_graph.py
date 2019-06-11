@@ -104,18 +104,8 @@ def test_graph_add_edges_from_node():
 def test_graph_get_nodes():
     graph = Graph()
     graph.add_nodes("node1", "node2")
-
     assert "node1" in graph.get_nodes()
     assert "node2" in graph.get_nodes()
-
-
-"""
-"pending": ["processing"],
-"processing": ["approved", "rejected"],
-"approved": ["processed"],
-"rejected": [],
-"processed": [],
-"""
 
 
 @pytest.mark.parametrize(

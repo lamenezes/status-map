@@ -11,15 +11,23 @@ def test_version():
 
 def test_status_map_magic_methods(transitions_map):
     assert str(transitions_map) == "('pending', 'processing', 'approved', 'rejected', 'processed')"
+
     assert (
         repr(transitions_map)
         == "StatusMap(statuses=('pending', 'processing', 'approved', 'rejected', 'processed'))"
     )
     assert len(transitions_map) == 5
-    assert transitions_map["pending"] in transitions_map
-    assert isinstance(transitions_map["pending"], Vertex)
+
+    assert transitions_map["pending"]
+
+    node = transitions_map["pending"]
+    assert isinstance(node, Vertex)
+    assert transitions_map[node]
+
     with pytest.raises(KeyError):
         transitions_map["does_not_exist"]
+
+    assert node in iter(transitions_map)
 
 
 def test_status_map_properties(transitions_map):
