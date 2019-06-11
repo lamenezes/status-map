@@ -35,30 +35,32 @@ class Graph:
         self.nodes = {}
         self.num_nodes = 0
 
-    def add_nodes(self, *keys):
-        for key in keys:
-            self.add_node(key)
-
     def add_node(self, key):
         self.num_nodes += 1
         node = Vertex(key)
         self.nodes[key] = node
         return node
 
+    def add_nodes(self, *keys):
+        added_nodes = []
+        for key in keys:
+            added_nodes.append(self.add_node(key))
+        return added_nodes
+
     def get_node(self, key):
         return self.nodes[key]
 
-    def add_edges_from_node(self, from_node, to_nodes, weight=0):
-        for to_node in to_nodes:
-            self.add_edge(from_node, to_node, weight)
-
-    def add_edge(self, from_node, to_node, weight=0):
+    def add_edge(self, from_node, to_node):
         if from_node == to_node:
             return
 
         from_node = self.get_node(from_node)
         to_node = self.get_node(to_node)
-        from_node.add_neighbor(to_node, weight)
+        from_node.add_neighbor(to_node)
+
+    def add_edges_from_node(self, from_node, to_nodes):
+        for to_node in to_nodes:
+            self.add_edge(from_node, to_node)
 
     def get_nodes(self):
         return self.nodes.keys()

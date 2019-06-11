@@ -153,9 +153,6 @@ def test_simple_validate_next_cyclic_transition(from_status, to_status, cycle_tr
     assert cycle_transitions_map.validate_transition(from_status, to_status) is None
 
 
-# real scenario 1
-
-
 def test_custom_status_map_case():
     status_map = {
         "": {"created"},
@@ -168,12 +165,9 @@ def test_custom_status_map_case():
 
     sm = StatusMap(status_map)
     assert sm.validate_transition("sent", "published") is None
-    # this transition wont be lost because it's future and will raise 409,
+    # this transition wont be lost because it's future and will raise 409.
     with pytest.raises(FutureTransition):
         sm.validate_transition("published", "sent")
-
-
-# real scenario 2
 
 
 @pytest.mark.parametrize(
