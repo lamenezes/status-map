@@ -43,14 +43,10 @@ class StatusMap(Mapping):
         if not self.graph.has_node(to_status):
             raise StatusNotFound(f"to_status {to_status} not found")
 
-        if from_status == to_status:
+        if from_status == to_status or self.graph.has_successor(from_status, to_status):
             return
 
-        if self.graph.has_successor(from_status, to_status):
-            return
-
-        # future needs to be the first validation to treat cyclic status map correct
-        if to_status in descendants(self.graph, from_status):
+        if to_status in descendants(self.graph, from_status):  # future needs to be first (cycle)
             msg = f"transition from {from_status} to {to_status} should happen in the future"
             raise FutureTransition(msg)
 
