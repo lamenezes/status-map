@@ -2,7 +2,6 @@ import pytest
 
 from status_map import StatusMap, __version__
 from status_map.exceptions import FutureTransition, RepeatedTransition, StatusNotFound, TransitionNotFound
-from status_map.graph import Vertex
 
 
 def test_version():
@@ -19,15 +18,10 @@ def test_status_map_magic_methods(transitions_map):
     assert len(transitions_map) == 5
 
     assert transitions_map["pending"]
-
-    node = transitions_map["pending"]
-    assert isinstance(node, Vertex)
-    assert transitions_map[node]
-
     with pytest.raises(KeyError):
         transitions_map["does_not_exist"]
 
-    assert node in iter(transitions_map)
+    assert "pending" in iter(transitions_map)
 
 
 def test_status_map_properties(transitions_map):

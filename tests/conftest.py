@@ -1,7 +1,6 @@
 import pytest
 
 from status_map import StatusMap
-from status_map.graph import Graph
 
 
 @pytest.fixture
@@ -102,14 +101,3 @@ def transitions_map(transitions):
 @pytest.fixture
 def cycle_transitions_map(cycle_transitions):
     return StatusMap(cycle_transitions)
-
-
-@pytest.fixture
-def graph(cycle_transitions):
-    graph = Graph()
-    graph.add_nodes(*cycle_transitions.keys())
-
-    for node in graph.get_nodes():
-        to_nodes = cycle_transitions[node]
-        graph.add_edges_from_node(node, to_nodes)
-    return graph
