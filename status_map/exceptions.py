@@ -12,3 +12,7 @@ class TransitionNotFound(InvalidTransition):
 
 class RepeatedTransition(InvalidTransition):
     pass
+
+
+class FutureTransition(InvalidTransition):
+    pass
