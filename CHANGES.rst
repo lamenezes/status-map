@@ -2,6 +2,13 @@
 Changes
 =======
 
+0.4.0 / 2019-12-04
+==================
+* Add Error suffix to exceptions names
+* Add AmbiguousTransitionError when the map has a cycle and the status transition can be both past and future
+* Use networkx and graph internally
+
+
 0.3.0 / 2019-06-04
 ==================
 
