@@ -1,7 +1,13 @@
 import pytest
 
 from status_map import StatusMap, __version__
-from status_map.exceptions import FutureTransition, RepeatedTransition, StatusNotFound, TransitionNotFound
+from status_map.exceptions import (
+    AmbiguousTransitionError,
+    FutureTransitionError,
+    PastTransitionError,
+    StatusNotFoundError,
+    TransitionNotFoundError,
+)
 
 
 def test_version():
@@ -29,7 +35,7 @@ def test_status_map_properties(transitions_map):
 
 
 def test_simple_transition_invalid_from_status(transitions_map):
-    with pytest.raises(StatusNotFound) as exc:
+    with pytest.raises(StatusNotFoundError) as exc:
         transitions_map.validate_transition("does-not-exists", "pending")
 
     assert "does-not-exists" in str(exc)
@@ -37,7 +43,7 @@ def test_simple_transition_invalid_from_status(transitions_map):
 
 
 def test_simple_transition_invalid_to_status(transitions_map):
-    with pytest.raises(StatusNotFound) as exc:
+    with pytest.raises(StatusNotFoundError) as exc:
         transitions_map.validate_transition("pending", "does-not-exists")
 
     assert "does-not-exists" in str(exc)
@@ -46,7 +52,7 @@ def test_simple_transition_invalid_to_status(transitions_map):
 
 @pytest.mark.parametrize("from_status,to_status", [("approved", "rejected"), ("processed", "rejected")])
 def test_simple_validate_transition_not_found(from_status, to_status, transitions_map):
-    with pytest.raises(TransitionNotFound):
+    with pytest.raises(TransitionNotFoundError):
         transitions_map.validate_transition(from_status, to_status)
 
 
@@ -61,7 +67,7 @@ def test_simple_validate_transition_not_found(from_status, to_status, transition
     ],
 )
 def test_simple_validate_transition_repeated_transition(from_status, to_status, transitions_map):
-    with pytest.raises(RepeatedTransition):
+    with pytest.raises(PastTransitionError):
         transitions_map.validate_transition(from_status, to_status)
 
 
@@ -73,13 +79,12 @@ def test_simple_validate_transition_repeated_transition(from_status, to_status, 
         ("processed", "pending"),
         ("processed", "processing"),
         ("processed", "approved"),
-        # TransitionNotFound treated as RepeatedTransition when transitions are cyclic
-        ("approved", "rejected"),  # rejected < pending < processing < approved
-        ("processed", "rejected"),  # rejected < pending < processing < approved < rejected
+        ("approved", "rejected"),
+        ("processed", "rejected"),
     ],
 )
 def test_simple_validate_transition_repeated_transition_cyclic(from_status, to_status, cycle_transitions_map):
-    with pytest.raises(RepeatedTransition):
+    with pytest.raises(PastTransitionError):
         cycle_transitions_map.validate_transition(from_status, to_status)
 
 
@@ -93,7 +98,7 @@ def test_simple_validate_transition_repeated_transition_cyclic(from_status, to_s
     ],
 )
 def test_simple_validate_future_transition(from_status, to_status, transitions_map):
-    with pytest.raises(FutureTransition):
+    with pytest.raises(FutureTransitionError):
         transitions_map.validate_transition(from_status, to_status)
 
 
@@ -104,16 +109,18 @@ def test_simple_validate_future_transition(from_status, to_status, transitions_m
         ("pending", "approved"),
         ("pending", "processed"),
         ("processing", "processed"),
-        # TransitionNotFound treated as FutureTransition when transitions are cyclic
-        ("rejected", "approved"),  # rejected > pending > processing > approved
-        ("rejected", "processed"),  # rejected > pending > processing > approved > processed
-        # RepeatedTransition treated as FutureTransition when transitions are cyclic
-        ("rejected", "processing"),  # rejected > pending > processing
-        ("processing", "pending"),  # processing > rejected > pending
+        ("rejected", "approved"),
+        ("rejected", "processed"),
     ],
 )
 def test_simple_validate_future_cyclic_transition(from_status, to_status, cycle_transitions_map):
-    with pytest.raises(FutureTransition):
+    with pytest.raises(FutureTransitionError):
+        cycle_transitions_map.validate_transition(from_status, to_status)
+
+
+@pytest.mark.parametrize("from_status,to_status", (("rejected", "processing"), ("processing", "pending")))
+def test_ambiguous_transitions(from_status, to_status, cycle_transitions_map):
+    with pytest.raises(AmbiguousTransitionError):
         cycle_transitions_map.validate_transition(from_status, to_status)
 
 
@@ -185,8 +192,7 @@ def test_custom_status_map_case():
 
     sm = StatusMap(status_map)
     assert sm.validate_transition("sent", "published") is None
-    # this transition wont be lost because it's future and will raise 409.
-    with pytest.raises(FutureTransition):
+    with pytest.raises(AmbiguousTransitionError):
         sm.validate_transition("published", "sent")
 
 
@@ -258,7 +264,7 @@ def test_validate_transition_next_status(from_status, to_status, complex_transit
     "from_status,to_status", [("delivered", "returned_to_sender"), ("returned_to_sender", "delivered")]
 )
 def test_validate_transitions_transition_not_found(from_status, to_status, complex_transitions_map):
-    with pytest.raises(TransitionNotFound):
+    with pytest.raises(TransitionNotFoundError):
         complex_transitions_map.validate_transition(from_status, to_status)
 
 
@@ -293,7 +299,7 @@ def test_validate_transitions_transition_not_found(from_status, to_status, compl
     ],
 )
 def test_validate_transitions_repeated_transition(from_status, to_status, complex_transitions_map):
-    with pytest.raises(RepeatedTransition):
+    with pytest.raises(PastTransitionError):
         complex_transitions_map.validate_transition(from_status, to_status)
 
 
@@ -307,9 +313,13 @@ def test_validate_transitions_repeated_transition(from_status, to_status, comple
         ("pending", "delivered"),
         ("pending", "returning_to_sender"),
         ("pending", "returned_to_sender"),
-        ("returning_to_sender", "awaiting_pickup_by_receiver"),
     ],
 )
 def test_validate_transitions_future_transition(from_status, to_status, complex_transitions_map):
-    with pytest.raises(FutureTransition):
+    with pytest.raises(FutureTransitionError):
         complex_transitions_map.validate_transition(from_status, to_status)
+
+
+def test_complex_transitions_ambiguous_transition(complex_transitions_map):
+    with pytest.raises(AmbiguousTransitionError):
+        complex_transitions_map.validate_transition("returning_to_sender", "awaiting_pickup_by_receiver")

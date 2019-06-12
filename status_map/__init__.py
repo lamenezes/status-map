@@ -3,7 +3,13 @@ from collections.abc import Mapping
 
 from networkx import DiGraph, ancestors, descendants
 
-from .exceptions import FutureTransition, RepeatedTransition, StatusNotFound, TransitionNotFound
+from .exceptions import (
+    AmbiguousTransitionError,
+    FutureTransitionError,
+    PastTransitionError,
+    StatusNotFoundError,
+    TransitionNotFoundError,
+)
 
 
 class StatusMap(Mapping):
@@ -12,10 +18,10 @@ class StatusMap(Mapping):
         graph.add_nodes_from(transitions.keys())
         for node in graph.nodes:
             edges = transitions[node]
-            edges = [(node, edge) for edge in edges]
+            edges = ((node, edge) for edge in edges)
             graph.add_edges_from(edges)
 
-        self.graph = graph
+        self._graph = graph
 
     def __repr__(self):
         return f"StatusMap(statuses={self.statuses})"
@@ -24,35 +30,38 @@ class StatusMap(Mapping):
         return f"{self.statuses}"
 
     def __getitem__(self, node):
-        return self.graph[node]
+        return self._graph[node]
 
     def __len__(self):
-        return self.graph.number_of_nodes()
+        return self._graph.number_of_nodes()
 
     def __iter__(self):
-        return iter(self.graph.nodes)
+        return iter(self._graph.nodes)
 
     @property
     def statuses(self):
-        return tuple(self.graph.nodes)
+        return tuple(self._graph.nodes)
 
     def validate_transition(self, from_status, to_status):
-        if not self.graph.has_node(from_status):
-            raise StatusNotFound(f"from_status {from_status} not found")
+        if not self._graph.has_node(from_status):
+            raise StatusNotFoundError(f"from_status {from_status} not found")
 
-        if not self.graph.has_node(to_status):
-            raise StatusNotFound(f"to_status {to_status} not found")
+        if not self._graph.has_node(to_status):
+            raise StatusNotFoundError(f"to_status {to_status} not found")
 
-        if from_status == to_status or self.graph.has_successor(from_status, to_status):
+        if from_status == to_status or self._graph.has_successor(from_status, to_status):
             return
 
-        if to_status in descendants(self.graph, from_status):  # future needs to be first (cycle)
-            msg = f"transition from {from_status} to {to_status} should happen in the future"
-            raise FutureTransition(msg)
+        is_ancestor = to_status in ancestors(self._graph, from_status)
+        is_descendant = to_status in descendants(self._graph, from_status)
 
-        if to_status in ancestors(self.graph, from_status):
-            msg = f"transition from {from_status} to {to_status} should have happened in the past"
-            raise RepeatedTransition(msg)
+        if is_ancestor and is_descendant:
+            raise AmbiguousTransitionError(f"from {from_status} to {to_status} is both past and future")
 
-        msg = f"transition from {from_status} to {to_status} not found"
-        raise TransitionNotFound(msg)
+        if is_descendant:
+            raise FutureTransitionError(f"from {from_status} to {to_status} should happen in the future")
+
+        if is_ancestor:
+            raise PastTransitionError(f"from {from_status} to {to_status} should have happened in the past")
+
+        raise TransitionNotFoundError(f"from {from_status} to {to_status} not found")

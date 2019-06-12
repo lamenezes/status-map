@@ -1,18 +1,22 @@
-class StatusNotFound(Exception):
+class StatusNotFoundError(Exception):
     pass
 
 
-class InvalidTransition(Exception):
+class InvalidTransitionError(Exception):
     pass
 
 
-class TransitionNotFound(InvalidTransition):
+class TransitionNotFoundError(InvalidTransitionError):
     pass
 
 
-class RepeatedTransition(InvalidTransition):
+class PastTransitionError(InvalidTransitionError):
     pass
 
 
-class FutureTransition(InvalidTransition):
+class FutureTransitionError(InvalidTransitionError):
+    pass
+
+
+class AmbiguousTransitionError(InvalidTransitionError):
     pass
