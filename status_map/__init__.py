@@ -14,7 +14,6 @@ from .exceptions import (
 
 
 class StatusMap(Mapping):
-    cache = {}
 
     def __init__(self, transitions):
         graph = DiGraph()

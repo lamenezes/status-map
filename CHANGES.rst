@@ -2,6 +2,10 @@
 Changes
 =======
 
+0.5.0 / 2019-14-04
+==================
+* Add new methods `StatusMap.get_ancestors()` and `StatusMap.get_descendants()` to calculate and cache paths to avoid recalculate them every time
+
 0.4.0 / 2019-12-04
 ==================
 * Add Error suffix to exceptions names
