@@ -1,5 +1,6 @@
 __version__ = "0.4.0"
 from collections.abc import Mapping
+from functools import lru_cache
 
 from networkx import DiGraph, ancestors, descendants
 
@@ -13,6 +14,8 @@ from .exceptions import (
 
 
 class StatusMap(Mapping):
+    cache = {}
+
     def __init__(self, transitions):
         graph = DiGraph()
         graph.add_nodes_from(transitions.keys())
@@ -42,6 +45,16 @@ class StatusMap(Mapping):
     def statuses(self):
         return tuple(self._graph.nodes)
 
+    @staticmethod
+    @lru_cache(maxsize=None)
+    def get_ancestors(graph, status):
+        return ancestors(graph, status)
+
+    @staticmethod
+    @lru_cache(maxsize=None)
+    def get_descendants(graph, status):
+        return descendants(graph, status)
+
     def validate_transition(self, from_status, to_status):
         if not self._graph.has_node(from_status):
             raise StatusNotFoundError(f"from_status {from_status} not found")
@@ -52,8 +65,8 @@ class StatusMap(Mapping):
         if from_status == to_status or self._graph.has_successor(from_status, to_status):
             return
 
-        is_ancestor = to_status in ancestors(self._graph, from_status)
-        is_descendant = to_status in descendants(self._graph, from_status)
+        is_ancestor = to_status in StatusMap.get_ancestors(self._graph, from_status)
+        is_descendant = to_status in StatusMap.get_descendants(self._graph, from_status)
 
         if is_ancestor and is_descendant:
             raise AmbiguousTransitionError(f"from {from_status} to {to_status} is both past and future")
