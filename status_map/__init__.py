@@ -14,7 +14,6 @@ from .exceptions import (
 
 
 class StatusMap(Mapping):
-
     def __init__(self, transitions):
         graph = DiGraph()
         graph.add_nodes_from(transitions.keys())
