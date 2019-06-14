@@ -101,3 +101,22 @@ def transitions_map(transitions):
 @pytest.fixture
 def cycle_transitions_map(cycle_transitions):
     return StatusMap(cycle_transitions)
+
+
+@pytest.fixture
+def repeated_statuses():
+    return (
+        "pending",
+        "pending",
+        "pending",
+        "processing",
+        "processing",
+        "rejected",
+        "rejected",
+        "rejected",
+        "approved",
+        "approved",
+        "processed",
+        "processed",
+        "processed",
+    )
