@@ -34,6 +34,28 @@ def test_status_map_properties(transitions_map):
     assert transitions_map.statuses == ("pending", "processing", "approved", "rejected", "processed")
 
 
+def test_status_map_cached_get_ancestors(transitions_map, repeated_statuses):
+    for status in repeated_statuses:
+        transitions_map.get_ancestors(transitions_map._graph, status)
+
+    cache_info = transitions_map.get_ancestors.cache_info()
+    assert cache_info.hits == 8
+    assert cache_info.misses == 5
+    assert cache_info.maxsize == 512
+    assert cache_info.currsize == 5
+
+
+def test_status_map_cached_get_descendants(transitions_map, repeated_statuses):
+    for status in repeated_statuses:
+        transitions_map.get_descendants(transitions_map._graph, status)
+
+    cache_info = transitions_map.get_descendants.cache_info()
+    assert cache_info.hits == 8
+    assert cache_info.misses == 5
+    assert cache_info.maxsize == 512
+    assert cache_info.currsize == 5
+
+
 def test_simple_transition_invalid_from_status(transitions_map):
     with pytest.raises(StatusNotFoundError) as exc:
         transitions_map.validate_transition("does-not-exists", "pending")
