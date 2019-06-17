@@ -41,7 +41,7 @@ def test_status_map_cached_get_ancestors(transitions_map, repeated_statuses):
     cache_info = transitions_map.get_ancestors.cache_info()
     assert cache_info.hits == 8
     assert cache_info.misses == 5
-    assert cache_info.maxsize is None
+    assert cache_info.maxsize == 512
     assert cache_info.currsize == 5
 
 
@@ -52,7 +52,7 @@ def test_status_map_cached_get_descendants(transitions_map, repeated_statuses):
     cache_info = transitions_map.get_descendants.cache_info()
     assert cache_info.hits == 8
     assert cache_info.misses == 5
-    assert cache_info.maxsize is None
+    assert cache_info.maxsize == 512
     assert cache_info.currsize == 5
 
 

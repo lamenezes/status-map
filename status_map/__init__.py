@@ -44,12 +44,12 @@ class StatusMap(Mapping):
         return tuple(self._graph.nodes)
 
     @staticmethod
-    @lru_cache(maxsize=None)
+    @lru_cache(maxsize=512)
     def get_ancestors(graph, status):
         return ancestors(graph, status)
 
     @staticmethod
-    @lru_cache(maxsize=None)
+    @lru_cache(maxsize=512)
     def get_descendants(graph, status):
         return descendants(graph, status)
 
