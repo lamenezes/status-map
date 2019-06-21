@@ -44,7 +44,7 @@ We can validate if a status transition is valid:
     >> status_map.validate_transition(from_status='todo', to_status='done')
     Traceback (most recent call last):
     ...
-    status_map.exceptions.TransitionNotFound: transition from todo to done not found
+    status_map.exceptions.TransitionNotFoundError: transition from todo to done not found
 
 
 Passing an inexistent status raises an exception:
@@ -54,7 +54,7 @@ Passing an inexistent status raises an exception:
     >> status_map.validate_transition('todo', 'foo')
     Traceback (most recent call last):
     ...
-    status_map.exceptions.StatusNotFound: to status foo not found
+    status_map.exceptions.StatusNotFoundError: to status foo not found
 
 
 The validation raises a different exception if the to_status has already appeared before:
@@ -64,7 +64,7 @@ The validation raises a different exception if the to_status has already appeare
     >> status_map.validate_transition('done', 'todo')
     Traceback (most recent call last):
     ...
-    status_map.exceptions.RepeatedTransition: transition from done to todo should have happened in the past
+    status_map.exceptions.PastTransitionError: transition from done to todo should have happened in the past
 
 
 How to contribute
