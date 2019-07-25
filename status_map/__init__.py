@@ -1,6 +1,7 @@
 __version__ = "0.5.0"
 
 from collections.abc import Mapping
+from copy import deepcopy
 from functools import lru_cache
 
 from networkx import DiGraph, ancestors, descendants
@@ -18,7 +19,8 @@ class StatusMap(Mapping):
     def __init__(self, transitions):
         graph = DiGraph()
         graph.add_nodes_from(transitions.keys())
-        for node in graph.nodes:
+        nodes = deepcopy(graph.nodes)
+        for node in nodes:
             edges = transitions[node]
             edges = ((node, edge) for edge in edges)
             graph.add_edges_from(edges)
