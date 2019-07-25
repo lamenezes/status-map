@@ -11,7 +11,7 @@ default_section = "THIRDPARTY"
 
 [tool.poetry]
 name = "status-map"
-version = "0.5.0"
+version = "0.5.1"
 description = "Status map (and its transitions) data structure"
 license = "MIT"
 authors = ["Luiz Menezes <luiz.menezesf@gmail.com>", "Rafael Cassau <rafa.cassau@gmail.com>"]

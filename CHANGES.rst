@@ -4,7 +4,7 @@ Changes
 
 0.5.1 / 2019-07-25
 ==================
-* Add deepcopy to avoid nodes to be changed size during iteration
+* Fix StatusMap instantiation to avoid change it's internal structure while creating it.
 
 0.5.0 / 2019-14-04
 ==================
