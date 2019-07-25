@@ -2,6 +2,10 @@
 Changes
 =======
 
+0.5.1 / 2019-07-25
+==================
+* Add deepcopy to avoid nodes to be changed size during iteration
+
 0.5.0 / 2019-14-04
 ==================
 * Add new methods `StatusMap.get_ancestors()` and `StatusMap.get_descendants()` to calculate and cache paths to avoid recalculate them every time
