@@ -6,7 +6,6 @@ repos:
     - id: trailing-whitespace
     - id: check-merge-conflict
     - id: check-ast
-    - id: check-merge-conflict
     - id: check-yaml
     - id: flake8
       args: ['--exclude=docs/*', '--ignore=E501,W503,E203']
