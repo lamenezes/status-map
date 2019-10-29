@@ -11,7 +11,7 @@ from status_map.exceptions import (
 
 
 def test_version():
-    assert __version__ == "0.5.0"
+    assert __version__ == "0.5.1"
 
 
 def test_status_map_magic_methods(transitions_map):
