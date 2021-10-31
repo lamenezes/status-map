@@ -5,6 +5,9 @@ workflows:
     jobs:
       - py36
       - py37
+      - py38
+      - py39
+      - py310
 
 jobs:
   py36: &test-template
@@ -48,3 +51,18 @@ jobs:
     <<: *test-template
     docker:
       - image: circleci/python:3.7.12
+
+  py38:
+    <<: *test-template
+    docker:
+      - image: circleci/python:3.8.12
+
+  py39:
+    <<: *test-template
+    docker:
+      - image: circleci/python:3.9.7
+
+  py310:
+    <<: *test-template
+    docker:
+      - image: circleci/python:3.10.0

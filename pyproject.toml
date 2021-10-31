@@ -22,17 +22,19 @@ homepage = "https://github.com/lamenezes/status-map"
 keywords = ['status', 'map', 'transition', 'validation']
 
 [tool.poetry.dependencies]
-python = ">=3.6.2"
+python = ">=3.6.2,<4"
 networkx = ">=2.5"
 
 [tool.poetry.dev-dependencies]
 black = { version = "*", allow-prereleases = true }
+codecov = "*"
 flake8 = ">=4.0"
 isort = ">=4.3"
 pre-commit = "^2.15"
 pytest = ">=6.0"
-pytest-cov = "^3.0"
+pytest-cov = ">=3.0"
+# urllib3 = ">=1.26"
 
 [build-system]
-requires = ["poetry>=1.1"]
+requires = ["poetry>=1.1.11"]
 build-backend = "poetry.masonry.api"
