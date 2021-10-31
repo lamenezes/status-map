@@ -67,15 +67,6 @@ The validation raises a different exception if the to_status has already appeare
     status_map.exceptions.PastTransitionError: transition from done to todo should have happened in the past
 
 
-How to contribute
-=================
-
-We welcome contributions of many forms, for example:
-
-- Code (by submitting pull requests)
-- Documentation improvements
-- Bug reports and feature requests
-
 Setting up for local development
 --------------------------------
 
@@ -108,7 +99,7 @@ That's it! You're ready from development.
 .. |version-badge| image:: https://badge.fury.io/py/status-map.svg
     :target: https://pypi.org/project/status-map/
 
-.. |pyversion-badge| image:: https://img.shields.io/badge/python-3.6,3.7-blue.svg
+.. |pyversion-badge| image:: https://img.shields.io/badge/python-3.6,3.7,3.8,3.9,3.10-blue.svg
     :target: https://github.com/lamenezes/status-map
 
 .. |license-badge| image:: https://img.shields.io/github/license/lamenezes/status-map.svg
