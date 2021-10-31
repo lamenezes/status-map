@@ -19,7 +19,8 @@ jobs:
       - checkout
 
       - restore_cache:
-          keys: deps-{{ checksum "pyproject.toml" }}
+          keys:
+            - deps-{{ checksum "pyproject.toml" }}
 
       - run:
           name: Install test dependencies
