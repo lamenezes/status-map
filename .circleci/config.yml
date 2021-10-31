@@ -10,7 +10,7 @@ jobs:
   py36: &test-template
     working_directory: ~/repo
     docker:
-      - image: circleci/python:3.6.8
+      - image: circleci/python:3.6.15
 
     steps:
       - checkout
@@ -47,4 +47,4 @@ jobs:
   py37:
     <<: *test-template
     docker:
-      - image: circleci/python:3.7.3
+      - image: circleci/python:3.7.12
